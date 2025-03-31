@@ -13,10 +13,11 @@ import {
   import { LoginDto } from './dto/login.dto';
   import { RefreshTokenDto } from './dto/refresh-token.dto';
   import { JwtAuthGuard } from './guards/jwt-auth.guard';
-  import { GoogleAuthGuard } from './guards/google-auth.guard';
+  import { GoogleAuthGuard } from './guards/google.auth.guard';
   import { FacebookAuthGuard } from './guards/facebook-auth.guard';
   import { GetUser } from '../common/decorators/user.decorator';
-  
+
+
   @Controller('auth')
   export class AuthController {
     constructor(private readonly authService: AuthService) {}

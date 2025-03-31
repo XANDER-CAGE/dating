@@ -9,13 +9,6 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { instanceToPlain } from 'class-transformer';
 
-// Определяем перечисление Gender здесь для простоты
-enum Gender {
-  MALE = 'male',
-  FEMALE = 'female',
-  OTHER = 'other',
-}
-
 @Injectable()
 export class UsersService {
   constructor(
@@ -56,8 +49,8 @@ export class UsersService {
       
       if (profile.gender) {
         // Проверяем, что значение соответствует перечислению Gender
-        if (Object.values(Gender).includes(profile.gender as any)) {
-          profileData.gender = profile.gender as any;
+        if (Object.values(Gender).includes(profile.gender as Gender)) {
+          profileData.gender = profile.gender as Gender;
         }
       }
       

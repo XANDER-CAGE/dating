@@ -10,14 +10,12 @@ import {
   import { Request } from 'express';
   import { RedisService } from '../services/redis.service';
   
-  // Расширяем интерфейс Request для поддержки свойства user
+  // Расширяем интерфейс Request для поддержки пользовательских свойств
   declare global {
     namespace Express {
-      interface Request {
-        user?: {
-          userId: string;
-          email: string;
-        };
+      interface User {
+        userId: string;
+        email: string;
       }
     }
   }
