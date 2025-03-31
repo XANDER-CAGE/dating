@@ -11,8 +11,8 @@ import {
   import { SubscriptionService } from './subscription.service';
   import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
   import { GetUser } from '../common/decorators/user.decorator';
-  import { CreateSubscriptionDto } from './dto/subscription-dto';
-  import { WebhookPayloadDto } from './dto/subscription-dto';
+  import { CreateSubscriptionDto } from './dto/create-subscription.dto';
+  import { WebhookPayloadDto } from './dto/webhook-payload.dto';
   import { RateLimit } from '../common/guards/rate-limiter.guard';
   import { PaymentProvider } from './entities/subscription.entity';
   

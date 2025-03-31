@@ -10,7 +10,7 @@ import {
     Query,
   } from '@nestjs/common';
   import { UsersService } from './users.service';
-  import { UpdateProfileDto } from './dto/update-profile.dto.ts';
+  import { UpdateProfileDto } from './dto/update-profile.dto';
   import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
   import { GetUser } from '../common/decorators/user.decorator';
   
