@@ -10,6 +10,18 @@ import {
   import { Request } from 'express';
   import { RedisService } from '../services/redis.service';
   
+  // Расширяем интерфейс Request для поддержки свойства user
+  declare global {
+    namespace Express {
+      interface Request {
+        user?: {
+          userId: string;
+          email: string;
+        };
+      }
+    }
+  }
+  
   export interface RateLimitOptions {
     points: number;     // Максимальное количество запросов
     duration: number;   // Период времени в секундах

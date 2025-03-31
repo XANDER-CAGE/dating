@@ -25,12 +25,15 @@ import {
       const statusCode = context.switchToHttp().getResponse().statusCode;
       
       return next.handle().pipe(
-        map(data => ({
-          data: instanceToPlain(data),
-          statusCode,
-          timestamp: new Date().toISOString(),
-          path: request.url,
-        })),
+        map((data) => {
+          const response = {
+            data: instanceToPlain(data) as T,
+            statusCode,
+            timestamp: new Date().toISOString(),
+            path: request.url,
+          };
+          return response;
+        }),
       );
     }
   }

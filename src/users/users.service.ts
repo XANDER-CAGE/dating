@@ -36,10 +36,30 @@ export class UsersService {
     
     // Если переданы данные профиля, создаем профиль
     if (profile) {
-      const newProfile = this.profilesRepository.create({
-        ...profile,
-        user,
-      });
+      // Преобразуем данные профиля в соответствии с типом
+      const profileData: Partial<Profile> = {
+        name: profile.name,
+        bio: profile.bio,
+      };
+      
+      // Добавляем поля для даты рождения и пола, если они есть
+      if (profile.birthDate) {
+        profileData.birthDate = new Date(profile.birthDate);
+      }
+      
+      if (profile.gender) {
+        // Проверяем, что значение соответствует перечислению Gender
+        if (Object.values(Gender).includes(profile.gender as Gender)) {
+          profileData.gender = profile.gender as Gender;
+        }
+      }
+      
+      // Создаем профиль с правильной типизацией
+      const newProfile = this.profilesRepository.create(profileData);
+      
+      // Связываем профиль с пользователем
+      newProfile.user = user;
+      
       await this.profilesRepository.save(newProfile);
       
       // Обновляем пользователя с профилем
