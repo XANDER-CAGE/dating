@@ -1,12 +1,12 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, In } from 'typeorm';
 import { User } from './entities/user.entity';
 import { Profile } from './entities/profile.entity';
 import { Interest } from './entities/interest.entity';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { UpdateProfileDto } from './dto/update-profile.dto.ts';
+import { UpdateProfileDto } from './dto/update-profile.dto';
 import { instanceToPlain } from 'class-transformer';
 
 @Injectable()
@@ -124,7 +124,10 @@ export class UsersService {
       throw new NotFoundException('Профиль пользователя не найден');
     }
     
-    const interests = await this.interestsRepository.findByIds(interestIds);
+    // Исправленный метод поиска интересов по ID
+    const interests = await this.interestsRepository.find({
+      where: { id: In(interestIds) }
+    });
     
     if (interests.length !== interestIds.length) {
       throw new BadRequestException('Некоторые указанные интересы не найдены');
