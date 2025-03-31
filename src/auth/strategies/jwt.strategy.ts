@@ -13,12 +13,12 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
-      secretOrKey: configService.get('JWT_SECRET'),
+      secretOrKey: configService.get<string>('JWT_SECRET', 'fallback_secret_key'), // Добавьте fallback
     });
   }
 
   async validate(payload: any) {
-    //  lastActive  
+    // lastActive  
     await this.usersService.updateLastActive(payload.sub);
     
     return { userId: payload.sub, email: payload.email };

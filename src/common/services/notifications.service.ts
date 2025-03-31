@@ -32,45 +32,51 @@ export class NotificationsService {
     private readonly redisService: RedisService,
     private readonly configService: ConfigService,
   ) {
-    // Подписываемся на события из Redis
-    this.subscribeToEvents();
-  }
-
-  private async subscribeToEvents() {
-    // Подписываемся на события мэтчей
-    await this.redisService.subscribe('new_match', (data) => {
-      this.sendNotification(
-        data.userId,
-        NotificationType.MATCH,
-        'Новый мэтч!',
-        'У вас появился новый мэтч. Начните общение прямо сейчас!',
-        { matchId: data.matchId }
-      );
-    });
-
-    // Подписываемся на события сообщений
-    await this.redisService.subscribe('new_message', (data) => {
-      this.sendNotification(
-        data.userId,
-        NotificationType.MESSAGE,
-        'Новое сообщение',
-        data.preview || 'Вам пришло новое сообщение',
-        { matchId: data.matchId, messageId: data.messageId }
-      );
-    });
-
-    // Подписываемся на события лайков
-    await this.redisService.subscribe('new_like', (data) => {
-      this.sendNotification(
-        data.userId,
-        NotificationType.LIKE,
-        'Новый лайк',
-        'Кому-то понравился ваш профиль!',
-        { matchId: data.matchId }
-      );
+    // Асинхронный метод для подписки на события
+    this.initializeEvents().catch(error => {
+      console.error('Error initializing notifications events:', error);
     });
   }
 
+  private async initializeEvents() {
+    try {
+      // Подписываемся на события мэтчей
+      await this.redisService.subscribe('new_match', (data) => {
+        this.sendNotification(
+          data.userId,
+          NotificationType.MATCH,
+          'Новый мэтч!',
+          'У вас появился новый мэтч. Начните общение прямо сейчас!',
+          { matchId: data.matchId }
+        );
+      });
+
+      // Подписываемся на события сообщений
+      await this.redisService.subscribe('new_message', (data) => {
+        this.sendNotification(
+          data.userId,
+          NotificationType.MESSAGE,
+          'Новое сообщение',
+          data.preview || 'Вам пришло новое сообщение',
+          { matchId: data.matchId, messageId: data.messageId }
+        );
+      });
+
+      // Подписываемся на события лайков
+      await this.redisService.subscribe('new_like', (data) => {
+        this.sendNotification(
+          data.userId,
+          NotificationType.LIKE,
+          'Новый лайк',
+          'Кому-то понравился ваш профиль!',
+          { matchId: data.matchId }
+        );
+      });
+    } catch (error) {
+      console.error('Error subscribing to events:', error);
+    }
+  }
+  
   async sendNotification(
     userId: string,
     type: NotificationType,

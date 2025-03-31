@@ -5,7 +5,7 @@ import Redis from 'ioredis';
 @Injectable()
 export class RedisService implements OnModuleInit, OnModuleDestroy {
   private redisClient: Redis;
-  private redisSubscriber: Redis;
+  private redisSubscriber: Redis | null = null; // Изменяем инициализацию
 
   constructor(private readonly configService: ConfigService) {}
 
@@ -42,8 +42,12 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
 
   async onModuleDestroy() {
     // Закрываем подключения при завершении работы приложения
-    await this.redisClient.quit();
-    await this.redisSubscriber.quit();
+    if (this.redisClient) {
+      await this.redisClient.quit();
+    }
+    if (this.redisSubscriber) {
+      await this.redisSubscriber.quit();
+    }
   }
 
   getClient(): Redis {
@@ -51,49 +55,18 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
   }
 
   getSubscriber(): Redis {
+    if (!this.redisSubscriber) {
+      throw new Error('Redis subscriber not initialized');
+    }
     return this.redisSubscriber;
   }
 
-  // Методы для работы с кешем
-  async set(key: string, value: any, ttl?: number): Promise<string> {
-    const serializedValue = typeof value === 'object' ? JSON.stringify(value) : value;
-    
-    if (ttl) {
-      return this.redisClient.set(key, serializedValue, 'EX', ttl);
-    }
-    
-    return this.redisClient.set(key, serializedValue);
-  }
-
-  async get(key: string): Promise<any> {
-    const value = await this.redisClient.get(key);
-    
-    if (!value) {
-      return null;
-    }
-    
-    try {
-      return JSON.parse(value);
-    } catch (error) {
-      return value;
-    }
-  }
-
-  async delete(key: string): Promise<number> {
-    return this.redisClient.del(key);
-  }
-
-  async exists(key: string): Promise<boolean> {
-    return (await this.redisClient.exists(key)) === 1;
-  }
-
-  // Методы для работы с pub/sub
-  async publish(channel: string, message: any): Promise<number> {
-    const serializedMessage = typeof message === 'object' ? JSON.stringify(message) : message;
-    return this.redisClient.publish(channel, serializedMessage);
-  }
-
+  // Методы для подписки с проверкой инициализации
   async subscribe(channel: string, callback: (message: any, channel: string) => void): Promise<void> {
+    if (!this.redisSubscriber) {
+      throw new Error('Redis subscriber not initialized');
+    }
+
     await this.redisSubscriber.subscribe(channel);
     
     this.redisSubscriber.on('message', (subscribedChannel, message) => {

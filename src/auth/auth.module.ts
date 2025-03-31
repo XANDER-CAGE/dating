@@ -6,9 +6,6 @@ import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { UsersModule } from '../users/users.module';
 import { JwtStrategy } from './strategies/jwt.strategy';
-// Временно отключаем OAuth стратегии
-// import { GoogleStrategy } from './strategies/google.strategy';
-// import { FacebookStrategy } from './strategies/facebook.strategy';
 
 @Module({
   imports: [
@@ -18,7 +15,7 @@ import { JwtStrategy } from './strategies/jwt.strategy';
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({
-        secret: configService.get('JWT_SECRET', 'default_jwt_secret'),
+        secret: configService.get<string>('JWT_SECRET', 'fallback_secret_key'), // Добавьте fallback
         signOptions: { 
           expiresIn: configService.get('JWT_EXPIRATION', '1h') 
         },
@@ -29,9 +26,6 @@ import { JwtStrategy } from './strategies/jwt.strategy';
   providers: [
     AuthService, 
     JwtStrategy,
-    // Временно отключаем OAuth стратегии
-    // GoogleStrategy,
-    // FacebookStrategy
   ],
   exports: [AuthService],
 })
