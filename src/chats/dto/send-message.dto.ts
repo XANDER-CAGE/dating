@@ -8,8 +8,8 @@ export class SendMessageDto {
   @MaxLength(1000)
   content: string;
 
-  @ApiProperty({ enum: MessageType, default: MessageType.TEXT })
+  @ApiProperty({ enum: MessageType, default: MessageType.TEXT, required: false })
   @IsOptional()
   @IsEnum(MessageType)
-  messageType?: MessageType;
+  messageType?: MessageType = MessageType.TEXT;
 }

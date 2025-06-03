@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Message } from './entities/message.entity';
+import { Message, MessageType } from './entities/message.entity';
 import { Match } from '../matches/entities/match.entity';
 import { SendMessageDto } from './dto/send-message.dto';
 import { MatchesService } from '../matches/matches.service';
@@ -36,7 +36,7 @@ export class ChatsService {
       matchId,
       senderId,
       content: sendMessageDto.content,
-      messageType: sendMessageDto.messageType || 'text',
+      messageType: sendMessageDto.messageType || MessageType.TEXT,
     });
 
     const savedMessage = await this.messagesRepository.save(message);
@@ -59,7 +59,7 @@ export class ChatsService {
       senderId,
       recipientId,
       content: sendMessageDto.content,
-      messageType: sendMessageDto.messageType || 'text',
+      messageType: sendMessageDto.messageType || MessageType.TEXT,
       createdAt: fullMessage.createdAt,
     });
 
