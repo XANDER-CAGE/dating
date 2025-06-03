@@ -1,0 +1,67 @@
+import {
+    IsString,
+    IsNumber,
+    IsEnum,
+    IsOptional,
+    IsArray,
+    IsBoolean,
+    Min,
+    Max,
+    MaxLength,
+  } from 'class-validator';
+  import { ApiProperty } from '@nestjs/swagger';
+  import { Gender, InterestedIn } from '../entities/profile.entity';
+  
+  export class CreateProfileDto {
+    @ApiProperty({ example: 'Анна' })
+    @IsString()
+    @MaxLength(50)
+    name: string;
+  
+    @ApiProperty({ example: 'Люблю путешествия и хорошую музыку', required: false })
+    @IsOptional()
+    @IsString()
+    @MaxLength(500)
+    bio?: string;
+  
+    @ApiProperty({ example: 25 })
+    @IsNumber()
+    @Min(18)
+    @Max(100)
+    age: number;
+  
+    @ApiProperty({ enum: Gender, example: Gender.FEMALE })
+    @IsEnum(Gender)
+    gender: Gender;
+  
+    @ApiProperty({ enum: InterestedIn, example: InterestedIn.MALE })
+    @IsEnum(InterestedIn)
+    interestedIn: InterestedIn;
+  
+    @ApiProperty({ example: 55.7558, required: false })
+    @IsOptional()
+    @IsNumber()
+    latitude?: number;
+  
+    @ApiProperty({ example: 37.6176, required: false })
+    @IsOptional()
+    @IsNumber()
+    longitude?: number;
+  
+    @ApiProperty({ example: 50, required: false })
+    @IsOptional()
+    @IsNumber()
+    @Min(1)
+    @Max(100)
+    maxDistance?: number;
+  
+    @ApiProperty({ 
+      example: ['путешествия', 'музыка', 'спорт'], 
+      required: false,
+      type: [String]
+    })
+    @IsOptional()
+    @IsArray()
+    @IsString({ each: true })
+    interests?: string[];
+  }
