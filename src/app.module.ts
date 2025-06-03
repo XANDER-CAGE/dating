@@ -6,6 +6,7 @@ import { EventEmitterModule } from '@nestjs/event-emitter';
 import { APP_GUARD } from '@nestjs/core';
 
 // Modules
+import { CommonModule } from './common/common.module';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { ProfilesModule } from './profiles/profiles.module';
@@ -48,6 +49,7 @@ import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
     EventEmitterModule.forRoot(),
     
     // Feature modules
+    CommonModule,
     AuthModule,
     UsersModule,
     ProfilesModule,

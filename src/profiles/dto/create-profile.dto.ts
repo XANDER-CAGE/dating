@@ -38,21 +38,25 @@ import {
     @IsEnum(InterestedIn)
     interestedIn: InterestedIn;
   
-    @ApiProperty({ example: 55.7558, required: false })
+    @ApiProperty({ example: 55.7558, required: false, description: 'Широта' })
     @IsOptional()
     @IsNumber()
+    @Min(-90)
+    @Max(90)
     latitude?: number;
   
-    @ApiProperty({ example: 37.6176, required: false })
+    @ApiProperty({ example: 37.6176, required: false, description: 'Долгота' })
     @IsOptional()
     @IsNumber()
+    @Min(-180)
+    @Max(180)
     longitude?: number;
   
-    @ApiProperty({ example: 50, required: false })
+    @ApiProperty({ example: 50, required: false, description: 'Максимальное расстояние поиска в км' })
     @IsOptional()
     @IsNumber()
     @Min(1)
-    @Max(100)
+    @Max(1000)
     maxDistance?: number;
   
     @ApiProperty({ 
@@ -64,4 +68,33 @@ import {
     @IsArray()
     @IsString({ each: true })
     interests?: string[];
+  
+    @ApiProperty({ 
+      example: true, 
+      required: false, 
+      description: 'Показывать ли местоположение другим пользователям'
+    })
+    @IsOptional()
+    @IsBoolean()
+    isLocationVisible?: boolean = true;
+  
+    @ApiProperty({ 
+      example: 'Москва', 
+      required: false, 
+      description: 'Город (заполняется автоматически)'
+    })
+    @IsOptional()
+    @IsString()
+    @MaxLength(100)
+    city?: string;
+  
+    @ApiProperty({ 
+      example: 'Россия', 
+      required: false, 
+      description: 'Страна (заполняется автоматически)'
+    })
+    @IsOptional()
+    @IsString()
+    @MaxLength(100)
+    country?: string;
   }

@@ -7,6 +7,7 @@ import {
     UseGuards,
     Query,
     ParseIntPipe,
+    ParseUUIDPipe,
     NotFoundException,
   } from '@nestjs/common';
   import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
@@ -48,8 +49,9 @@ import {
     @Get(':id')
     @ApiOperation({ summary: 'Get match by ID' })
     @ApiResponse({ status: 200, description: 'Match retrieved successfully' })
+    @ApiResponse({ status: 400, description: 'Invalid UUID format' })
     @ApiResponse({ status: 404, description: 'Match not found' })
-    async getMatch(@Param('id') id: string, @Request() req) {
+    async getMatch(@Param('id', ParseUUIDPipe) id: string, @Request() req) {
       const match = await this.matchesService.getMatchById(id);
       if (!match) {
         throw new NotFoundException('Match not found');
@@ -66,8 +68,9 @@ import {
     @Delete(':id')
     @ApiOperation({ summary: 'Unmatch with user' })
     @ApiResponse({ status: 200, description: 'Successfully unmatched' })
+    @ApiResponse({ status: 400, description: 'Invalid UUID format' })
     @ApiResponse({ status: 404, description: 'Match not found' })
-    async unmatch(@Param('id') id: string, @Request() req): Promise<{ message: string }> {
+    async unmatch(@Param('id', ParseUUIDPipe) id: string, @Request() req): Promise<{ message: string }> {
       await this.matchesService.unmatch(id, req.user.id);
       return { message: 'Successfully unmatched' };
     }
