@@ -1,122 +1,72 @@
-import { Injectable, ConflictException, UnauthorizedException } from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
-import { ConfigService } from '@nestjs/config';
-import * as bcrypt from 'bcrypt';
-import { UsersService } from '../users/users.service';
+import {
+  Controller,
+  Post,
+  Body,
+  UseGuards,
+  Request,
+  HttpCode,
+  HttpStatus,
+} from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiResponse, ApiBody } from '@nestjs/swagger';
+import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
-import { User } from '../users/entities/user.entity';
-import { JwtPayload } from './strategies/jwt.strategy';
+import { LoginDto } from './dto/login.dto';
 import { AuthResponseDto } from './dto/auth-response.dto';
+import { LocalAuthGuard } from './guards/local-auth.guard';
+import { Public } from '../common/decorators/public.decorator';
 
-@Injectable()
-export class AuthService {
-  constructor(
-    private usersService: UsersService,
-    private jwtService: JwtService,
-    private configService: ConfigService,
-  ) {}
+@ApiTags('Authentication')
+@Controller('auth')
+@Public()
+export class AuthController {
+  constructor(private authService: AuthService) {}
 
-  async register(registerDto: RegisterDto): Promise<AuthResponseDto> {
-    const { email, phone, password } = registerDto;
+  @Post('register')
+  @ApiOperation({ summary: 'Register a new user' })
+  @ApiResponse({ 
+    status: 201, 
+    description: 'User registered successfully', 
+    type: AuthResponseDto 
+  })
+  @ApiResponse({ status: 409, description: 'User already exists' })
+  async register(@Body() registerDto: RegisterDto): Promise<AuthResponseDto> {
+    return this.authService.register(registerDto);
+  }
 
-    // Проверяем существование пользователя
-    const existingUser = await this.usersService.findByEmail(email);
-    if (existingUser) {
-      throw new ConflictException('User with this email already exists');
-    }
+  @Post('login')
+  @UseGuards(LocalAuthGuard)
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Login user' })
+  @ApiBody({ type: LoginDto })
+  @ApiResponse({ 
+    status: 200, 
+    description: 'User logged in successfully', 
+    type: AuthResponseDto 
+  })
+  @ApiResponse({ status: 401, description: 'Invalid credentials' })
+  async login(@Request() req): Promise<AuthResponseDto> {
+    return this.authService.login(req.user);
+  }
 
-    if (phone) {
-      const existingUserByPhone = await this.usersService.findByPhone(phone);
-      if (existingUserByPhone) {
-        throw new ConflictException('User with this phone already exists');
-      }
-    }
+  @Post('refresh')
+  @ApiOperation({ summary: 'Refresh access token' })
+  @ApiResponse({ status: 200, description: 'Token refreshed successfully' })
+  @ApiResponse({ status: 401, description: 'Invalid refresh token' })
+  async refresh(
+    @Body('refreshToken') refreshToken: string
+  ): Promise<{ accessToken: string; refreshToken: string }> {
+    return this.authService.refreshTokens(refreshToken);
+  }
 
-    // Хешируем пароль
-    const saltRounds = 12;
-    const passwordHash = await bcrypt.hash(password, saltRounds);
-
-    // Создаем пользователя
-    const user = await this.usersService.create({
-      email,
-      phone,
-      passwordHash,
-    });
-
-    // Генерируем токены
-    const tokens = await this.generateTokens(user);
-
-    return {
-      ...tokens,
-      user: {
-        id: user.id,
-        email: user.email,
-        isVerified: user.isVerified,
-      },
+  @Post('verify-email')
+  @ApiOperation({ summary: 'Verify email address' })
+  @ApiResponse({ status: 200, description: 'Email verified successfully' })
+  async verifyEmail(
+    @Body('userId') userId: string
+  ): Promise<{ message: string }> {
+    const verified = await this.authService.verifyEmail(userId);
+    return { 
+      message: verified ? 'Email verified successfully' : 'Verification failed' 
     };
-  }
-
-  async login(user: User): Promise<AuthResponseDto> {
-    const tokens = await this.generateTokens(user);
-
-    return {
-      ...tokens,
-      user: {
-        id: user.id,
-        email: user.email,
-        isVerified: user.isVerified,
-      },
-    };
-  }
-
-  async validateUser(email: string, password: string): Promise<User | null> {
-    const user = await this.usersService.findByEmail(email);
-    
-    if (user && await bcrypt.compare(password, user.passwordHash)) {
-      return user;
-    }
-    
-    return null;
-  }
-
-  async refreshTokens(refreshToken: string): Promise<{ accessToken: string; refreshToken: string }> {
-    try {
-      const payload = this.jwtService.verify(refreshToken, {
-        secret: this.configService.get<string>('JWT_REFRESH_SECRET'),
-      });
-
-      const user = await this.usersService.findById(payload.sub);
-      if (!user || !user.isActive) {
-        throw new UnauthorizedException('User not found or inactive');
-      }
-
-      return this.generateTokens(user);
-    } catch (error) {
-      throw new UnauthorizedException('Invalid refresh token');
-    }
-  }
-
-  private async generateTokens(user: User): Promise<{ accessToken: string; refreshToken: string }> {
-    const payload: JwtPayload = {
-      sub: user.id,
-      email: user.email,
-    };
-
-    const [accessToken, refreshToken] = await Promise.all([
-      this.jwtService.signAsync(payload, {
-        secret: this.configService.get<string>('JWT_SECRET'),
-        expiresIn: this.configService.get<string>('JWT_EXPIRES_IN', '15m'),
-      }),
-      this.jwtService.signAsync(payload, {
-        secret: this.configService.get<string>('JWT_REFRESH_SECRET'),
-        expiresIn: '7d',
-      }),
-    ]);
-
-    return { accessToken, refreshToken };
-  }
-
-  async verifyEmail(userId: string): Promise<boolean> {
-    return this.usersService.markAsVerified(userId);
   }
 }

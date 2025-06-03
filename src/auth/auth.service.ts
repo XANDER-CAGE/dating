@@ -6,6 +6,7 @@ import { UsersService } from '../users/users.service';
 import { RegisterDto } from './dto/register.dto';
 import { User } from '../users/entities/user.entity';
 import { JwtPayload } from './strategies/jwt.strategy';
+import { AuthResponseDto } from './dto/auth-response.dto';
 
 @Injectable()
 export class AuthService {
@@ -15,7 +16,7 @@ export class AuthService {
     private configService: ConfigService,
   ) {}
 
-  async register(registerDto: RegisterDto): Promise<{ accessToken: string; refreshToken: string; user: Partial<User> }> {
+  async register(registerDto: RegisterDto): Promise<AuthResponseDto> {
     const { email, phone, password } = registerDto;
 
     // Проверяем существование пользователя
@@ -55,7 +56,7 @@ export class AuthService {
     };
   }
 
-  async login(user: User): Promise<{ accessToken: string; refreshToken: string; user: Partial<User> }> {
+  async login(user: User): Promise<AuthResponseDto> {
     const tokens = await this.generateTokens(user);
 
     return {
