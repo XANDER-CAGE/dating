@@ -2,15 +2,19 @@ version: '3.8'
 
 services:
   postgres:
-    image: postgres:15
+    image: postgis/postgis:15-3.3  # 🗺️ PostGIS образ вместо обычного PostgreSQL
     environment:
       POSTGRES_DB: dating_app
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: password
+      # Опционально: принудительное создание расширений
+      POSTGRES_INITDB_ARGS: "--encoding=UTF-8 --lc-collate=C --lc-ctype=C"
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      # Опционально: скрипт инициализации
+      - ./init-postgis.sql:/docker-entrypoint-initdb.d/init-postgis.sql
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 10s
